@@ -44,14 +44,12 @@ services:
       - 5432:5432
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 30s
+      timeout: 60s
+      retries: 5
 
 volumes:
   redis_data:
   postgres_data:
-
-# Секция определяет внешнюю сеть с именем app_main
-# Позволяет нескольким контейнерам связываться друг с другом и с внешними ресурсами.
-networks:
-  default:
-    external: true
-    name: app_main
