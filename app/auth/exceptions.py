@@ -13,6 +13,7 @@ class ErrorCode:
     ACCESS_TOKEN_REQUIRED = "Access token is required in the Authorization header."
     ACCESS_TOKEN_EXPIRED = "Access token has expired. Get a new one."
 
+
 class NotAuthenticated(DetailedHTTPException):
     STATUS_CODE = status.HTTP_401_UNAUTHORIZED
     DETAIL = "User not authenticated"

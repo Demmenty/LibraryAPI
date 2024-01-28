@@ -14,4 +14,4 @@ class Config(BaseSettings):
 
 
 auth_config = Config()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/token", auto_error=False)

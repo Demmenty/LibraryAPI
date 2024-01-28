@@ -5,7 +5,7 @@ from app.external.redis_db.config import redis_config
 from app.external.redis_db.schemas import RedisData
 
 
-class RedisService():
+class RedisService:
 
     def __init__(self):
         self.pool: aioredis.ConnectionPool = None
@@ -18,34 +18,36 @@ class RedisService():
     async def __aexit__(self, exc_type, exc, tb):
         await self.disconnect()
 
-    async def connect(self, max_connections:int = 10):
+    async def connect(self, max_connections: int = 10):
         """
-        Connects to a Redis database and creates a connection pool. 
+        Connects to a Redis database and creates a connection pool.
 
         Args:
-            max_connections (int, optional): The maximum number of connections to be created. 
+            max_connections (int, optional): The maximum number of connections to be created.
                 Defaults to 10.
         """
 
         self.pool = aioredis.ConnectionPool.from_url(
-            str(redis_config.REDIS_URL), 
-            max_connections=max_connections, 
-            decode_responses=True
+            str(redis_config.REDIS_URL),
+            max_connections=max_connections,
+            decode_responses=True,
         )
         self.client = aioredis.Redis(connection_pool=self.pool)
-    
+
     async def disconnect(self):
         """Disconnects from the Redis connection pool"""
 
         await self.pool.disconnect()
 
-    async def set_key(self, redis_data: RedisData, *, is_transaction: bool = False) -> None:
+    async def set_key(
+        self, redis_data: RedisData, *, is_transaction: bool = False
+    ) -> None:
         """
         Sets the key in the Redis database with the provided RedisData object.
-        
+
         Args:
             redis_data (RedisData): The RedisData object containing the key and value to be set.
-            is_transaction (bool, optional): Indicates if the operation should be performed within a transaction. 
+            is_transaction (bool, optional): Indicates if the operation should be performed within a transaction.
                 Defaults to False.
         """
 
@@ -67,7 +69,7 @@ class RedisService():
         """
 
         value = await self.client.get(key)
-    
+
         return value
 
     async def delete_by_key(self, key: str) -> None:

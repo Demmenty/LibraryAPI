@@ -8,12 +8,12 @@ from app.external.google_books_api.config import gb_config
 
 class GoogleBooksService:
 
-    BASE_URL: str = gb_config.GB_API_URL
+    BASE_URL: str = gb_config.GOOGLE_BOOKS_API
 
     @property
     def session(self):
         return httpx.AsyncClient(base_url=self.BASE_URL, timeout=10.0)
-    
+
     async def fetch_data(self, url: str) -> dict | None:
         """
         Fetches data from the given URL using an HTTP GET request.
@@ -46,12 +46,12 @@ class GoogleBooksService:
             Book | None: The retrieved book if found, otherwise None.
         """
 
-        url = f"{self.BASE_URL}/books/v1/volumes?q=isbn:{isbn}"
+        url = f"{self.BASE_URL}/volumes?q=isbn:{isbn}"
 
         response_json = await self.fetch_data(url)
         if not response_json or response_json["totalItems"] == 0:
             return None
-        
+
         book = self._parse_book_from_response(isbn, response_json)
 
         return book
@@ -76,7 +76,9 @@ class GoogleBooksService:
             language=book_info["language"],
             publication_date=book_info["publishedDate"],
             authors=[Author(name=author) for author in book_info.get("authors", [])],
-            categories=[Category(name=category) for category in book_info.get("categories", [])],
+            categories=[
+                Category(name=category) for category in book_info.get("categories", [])
+            ],
         )
 
         return book

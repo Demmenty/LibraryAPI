@@ -13,6 +13,7 @@ class DetailedHTTPException(HTTPException):
 
 class NotFound(DetailedHTTPException):
     STATUS_CODE = status.HTTP_404_NOT_FOUND
+    DETAIL = "Not Found"
 
 
 class BadRequest(DetailedHTTPException):

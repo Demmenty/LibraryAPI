@@ -1,8 +1,4 @@
-version: "3.8"
-
-# Определяются три сервиса: 
-# api - основное приложение, 
-# базы данных: redis и postgres.
+# Сервисы: api - основное приложение, redis и postgres - базы данных.
 services:
   api:
     container_name: api
@@ -33,6 +29,8 @@ services:
     hostname: redis
     ports:
       - 6379:6379
+    volumes:
+      - redis_data:/data
   
   postgres:
     container_name: postgres
@@ -44,9 +42,15 @@ services:
       - .env
     ports:
       - 5432:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  redis_data:
+  postgres_data:
 
 # Секция определяет внешнюю сеть с именем app_main
-# Она позволяет нескольким контейнерам связываться друг с другом, а также с внешними ресурсами.
+# Позволяет нескольким контейнерам связываться друг с другом и с внешними ресурсами.
 networks:
   default:
     external: true

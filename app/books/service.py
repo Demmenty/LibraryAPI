@@ -40,7 +40,9 @@ class BookService:
 
         return new_book
 
-    async def create_author(self, db: AsyncSession, author: schemas.Author) -> AuthorModel:
+    async def create_author(
+        self, db: AsyncSession, author: schemas.Author
+    ) -> AuthorModel:
         """
         Create an author in the database.
 
@@ -94,7 +96,7 @@ class BookService:
 
         result = await db.execute(select(BookModel).filter(BookModel.isbn == isbn))
         book = result.scalars().first()
-    
+
         return book
 
     async def get_books_by_category(
@@ -118,9 +120,53 @@ class BookService:
 
         return books
 
+    async def search_books(
+        self,
+        db: AsyncSession,
+        search_query: schemas.BookSearchQuery,
+    ) -> list[BookModel]:
+
+        query = select(BookModel)
+        if search_query.title:
+            query = query.filter(BookModel.title == search_query.title)
+        if search_query.author:
+            query = query.filter(
+                BookModel.authors.any(AuthorModel.name == search_query.author)
+            )
+        if search_query.publication_date:
+            query = query.filter(
+                BookModel.publication_date == search_query.publication_date
+            )
+        if search_query.isbn:
+            query = query.filter(BookModel.isbn == search_query.isbn)
+
+        result = await db.execute(query)
+        books = result.scalars().all()
+
+        return books
+
     # TODO remove
     async def get_all_books(self, db: AsyncSession) -> list[BookModel]:
         result = await db.execute(select(BookModel))
         books_db = result.scalars().all()
 
         return books_db
+
+    async def get_author_by_name(
+        self, db: AsyncSession, name: str
+    ) -> AuthorModel | None:
+        """
+        Retrieves an author by name from the database.
+
+        Args:
+            db (AsyncSession): The asynchronous database session.
+            name (str): The name of the author to retrieve.
+
+        Returns:
+            AuthorModel | None: The retrieved author, or None if not found.
+        """
+
+        result = await db.execute(select(AuthorModel).filter_by(name=name))
+        author = result.scalars().first()
+
+        return author

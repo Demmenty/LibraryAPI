@@ -28,9 +28,8 @@ async def get_book_by_isbn(
 ) -> dict:
     """Retrieves a book details by ISBN"""
 
-    cached_book = await redis_service.get_by_key(isbn)
+    cached_book = await redis_service.get_by_key(f"book:{isbn}")
     if cached_book:
-        print("!!! book found in cache")
         book_schema = schemas.Book(**json.loads(cached_book))
         return book_schema
 
@@ -44,7 +43,9 @@ async def get_book_by_isbn(
 
         worker.add_task(book_service.create_book, db, book_schema)
 
-    cache_data = RedisData(key=isbn, value=book_schema.model_dump_json(), ttl=3600)
+    cache_data = RedisData(
+        key=f"book:{isbn}", value=book_schema.model_dump_json(), ttl=3600
+    )
     worker.add_task(redis_service.set_key, cache_data)
 
     return book_schema
@@ -60,12 +61,10 @@ async def get_books_by_category(
 ) -> dict:
     """Retrieves books details by category"""
 
-    cached_books = await redis_service.get_by_key(category)
+    cached_books = await redis_service.get_by_key(f"book:{category}")
     if cached_books:
         books_schema = schemas.BookList(
-            books=[
-                schemas.Book(**json.loads(book)) for book in json.loads(cached_books)
-            ]
+            books=[schemas.Book(**json.loads(book)) for book in json.loads(cached_books)]
         )
         return books_schema
 
@@ -78,7 +77,42 @@ async def get_books_by_category(
     )
 
     cache_data = RedisData(
-        key=category,
+        key=f"book:{category}",
+        value=json.dumps([book.model_dump_json() for book in books_schema.books]),
+        ttl=1200,
+    )
+    worker.add_task(redis_service.set_key, cache_data)
+
+    return books_schema
+
+
+@router.post("/search", response_model=schemas.BookList)
+async def search_books(
+    worker: BackgroundTasks,
+    search_query: schemas.BookSearchQuery,
+    db: AsyncSession = Depends(get_db),
+    book_service: BookService = Depends(BookService),
+    user: UserModel = Depends(get_user_from_access_token),
+) -> dict:
+    """Retrieves books details based on the search query"""
+
+    cached_books = await redis_service.get_by_key(f"book:{search_query}")
+    if cached_books:
+        books_schema = schemas.BookList(
+            books=[schemas.Book(**json.loads(book)) for book in json.loads(cached_books)]
+        )
+        return books_schema
+
+    books_db = await book_service.search_books(db, search_query)
+    if not books_db:
+        raise BookNotFound()
+
+    books_schema = schemas.BookList(
+        books=[schemas.Book.from_model(book) for book in books_db]
+    )
+
+    cache_data = RedisData(
+        key=f"book:{search_query}",
         value=json.dumps([book.model_dump_json() for book in books_schema.books]),
         ttl=1200,
     )

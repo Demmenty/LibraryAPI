@@ -3,22 +3,27 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependiencies import get_user_from_refresh_token
-from app.auth.schemas import AccessTokenResponse, SuccessLoginPesponse
+from app.auth.exceptions import InvalidCredentials
+from app.auth.schemas import (
+    AccessTokenResponse,
+    SuccessLoginPesponse,
+    SuccessLogoutPesponse,
+)
 from app.auth.service import TokenService
-from app.auth.utils import (generate_access_token,
-                            get_refresh_token_cookie_settings)
+from app.auth.utils import generate_access_token, get_refresh_token_cookie_settings
 from app.database import get_db
 from app.users.exceptions import EmailTaken, UsernameTaken
-from app.users.service import UserService
 from app.users.schemas import User, UserResponse
-from app.auth.exceptions import InvalidCredentials
+from app.users.service import UserService
 
 router = APIRouter()
 
 
-@router.post("/register", status_code=status.HTTP_201_CREATED, response_model=UserResponse)
+@router.post(
+    "/register", status_code=status.HTTP_201_CREATED, response_model=UserResponse
+)
 async def register(
-    user: User, 
+    user: User,
     db: AsyncSession = Depends(get_db),
     user_service: UserService = Depends(UserService),
 ) -> dict:
@@ -43,7 +48,7 @@ async def login(
     token_service: TokenService = Depends(TokenService),
     user_service: UserService = Depends(UserService),
 ) -> dict:
-    """ Authenticates user and sets a cookie with the refresh token."""
+    """Authenticates user and sets a cookie with the refresh token"""
 
     user = await user_service.authenticate(db, auth_form)
     if not user:
@@ -60,7 +65,7 @@ async def login(
 async def get_api_access_token(
     user: User = Depends(get_user_from_refresh_token),
 ) -> dict:
-    """Generate a new API access token for logged user"""
+    """Generates a new API access token for logged user"""
 
     access_token = generate_access_token(user=user)
     access_token_schema = AccessTokenResponse(access_token=access_token)
@@ -68,17 +73,27 @@ async def get_api_access_token(
     return access_token_schema
 
 
-@router.delete("/logout", status_code=status.HTTP_204_NO_CONTENT)
+@router.post("/logout", response_model=SuccessLogoutPesponse)
 async def logout_user(
     response: Response,
+    db: AsyncSession = Depends(get_db),
     refresh_token_value: str = Cookie(..., alias="refreshToken"),
     token_service: TokenService = Depends(TokenService),
 ) -> None:
-    """Deletes the refresh token from cookie and expire the refresh token"""
+    """Deletes the refresh token from cookie and expires it"""
 
-    refresh_token = await token_service.get_refresh_token_by_value(refresh_token_value)
+    if not refresh_token_value:
+        return SuccessLogoutPesponse()
+
+    refresh_token = await token_service.get_refresh_token_by_value(
+        db, refresh_token_value
+    )
     if refresh_token:
-        await token_service.expire_refresh_token(refresh_token.uuid)
+        await token_service.expire_refresh_token(db, refresh_token.uuid)
 
-    refresh_token_settings = get_refresh_token_cookie_settings(refresh_token_value, expired=True)
+    refresh_token_settings = get_refresh_token_cookie_settings(
+        refresh_token_value, expired=True
+    )
     response.delete_cookie(**refresh_token_settings)
+
+    return SuccessLogoutPesponse()

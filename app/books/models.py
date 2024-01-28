@@ -3,18 +3,23 @@ from sqlalchemy.orm import relationship
 
 from app.users.models import Base
 
-book_author = Table('book_author', Base.metadata,
-    Column('book_id', Integer, ForeignKey('book.id')),
-    Column('author_id', Integer, ForeignKey('author.id'))
+book_author = Table(
+    "book_author",
+    Base.metadata,
+    Column("book_id", Integer, ForeignKey("book.id")),
+    Column("author_id", Integer, ForeignKey("author.id")),
 )
 
-book_category = Table('book_category', Base.metadata,
-    Column('book_id', Integer, ForeignKey('book.id')),
-    Column('category_id', Integer, ForeignKey('category.id'))
+book_category = Table(
+    "book_category",
+    Base.metadata,
+    Column("book_id", Integer, ForeignKey("book.id")),
+    Column("category_id", Integer, ForeignKey("category.id")),
 )
+
 
 class AuthorModel(Base):
-    __tablename__ = 'author'
+    __tablename__ = "author"
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
@@ -26,19 +31,21 @@ class AuthorModel(Base):
 
 
 class CategoryModel(Base):
-    __tablename__ = 'category'
+    __tablename__ = "category"
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
 
-    books = relationship("BookModel", secondary=book_category, back_populates="categories")
+    books = relationship(
+        "BookModel", secondary=book_category, back_populates="categories"
+    )
 
     def __str__(self):
         return f" Category {self.name}"
 
 
 class BookModel(Base):
-    __tablename__ = 'book'
+    __tablename__ = "book"
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, index=True)
@@ -46,8 +53,15 @@ class BookModel(Base):
     publication_date = Column(String, index=True)
     isbn = Column(String, index=True)
 
-    authors = relationship("AuthorModel", secondary=book_author, back_populates="books", lazy="selectin")
-    categories = relationship("CategoryModel", secondary=book_category, back_populates="books", lazy="selectin")
+    authors = relationship(
+        "AuthorModel", secondary=book_author, back_populates="books", lazy="selectin"
+    )
+    categories = relationship(
+        "CategoryModel",
+        secondary=book_category,
+        back_populates="books",
+        lazy="selectin",
+    )
 
     def __str__(self):
         return f" Book {self.title}"

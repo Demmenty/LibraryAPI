@@ -60,9 +60,7 @@ class UserService:
 
         return user
 
-    async def get_by_username(
-        self, db: AsyncSession, username: str
-    ) -> UserModel | None:
+    async def get_by_username(self, db: AsyncSession, username: str) -> UserModel | None:
         """
         Retrieves a user by username from the database.
 
@@ -80,7 +78,7 @@ class UserService:
         user = result.scalars().first()
 
         return user
-    
+
     async def get_by_email(self, db: AsyncSession, email: str) -> UserModel | None:
         """
         Retrieves a user by email from the database.

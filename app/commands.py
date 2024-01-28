@@ -1,14 +1,17 @@
 import click
-from app.users.service import UserService
+
 from app.database import async_session
-from app.users.schemas import User, UserRole
 from app.users.exceptions import EmailTaken, UsernameTaken
+from app.users.schemas import User, UserRole
+from app.users.service import UserService
 
 
 @click.command()
-@click.option('--username', prompt='Enter username', help='Admin username')
-@click.option('--email', prompt='Enter email', help='Admin email')
-@click.option('--password', prompt='Enter password', hide_input=True, help='Admin password')
+@click.option("--username", prompt="Enter username", help="Admin username")
+@click.option("--email", prompt="Enter email", help="Admin email")
+@click.option(
+    "--password", prompt="Enter password", hide_input=True, help="Admin password"
+)
 def createadmin(username, email, password):
     """
     Create an admin user with the provided username, email, and password.
@@ -33,7 +36,7 @@ def createadmin(username, email, password):
 
                 if await user_service.get_by_username(db, username):
                     raise UsernameTaken()
-                
+
                 admin_data = {
                     "username": username,
                     "email": email,
@@ -42,9 +45,9 @@ def createadmin(username, email, password):
                 }
                 admin_user = User(**admin_data)
                 await user_service.create_user(db, admin_user)
-                click.echo('Admin created successfully!')
+                click.echo("Admin created successfully!")
 
             except Exception as e:
-                click.echo(f'Error creating admin: {e}')
+                click.echo(f"Error creating admin: {e}")
 
     asyncio.run(create_admin())

@@ -11,7 +11,9 @@ from app.auth.models import RefreshTokenModel
 from app.config import settings
 from app.users.models import UserModel, UserRole
 
-STRONG_PASSWORD_PATTERN = re.compile(r"^(?=.*[\d])(?=.*[A-Za-z])(?=.*[!@#%^&*])[A-Za-z\d!@#%^&*]{6,128}$")
+STRONG_PASSWORD_PATTERN = re.compile(
+    r"^(?=.*[\d])(?=.*[A-Za-z])(?=.*[!@#%^&*])[A-Za-z\d!@#%^&*]{6,128}$"
+)
 
 
 def generate_random_alphanum(length: int = 20) -> str:
@@ -98,7 +100,9 @@ def generate_access_token(
         "exp": datetime.utcnow() + expires_delta,
         "is_admin": user.role == UserRole.ADMIN,
     }
-    access_token = jwt.encode(jwt_data, auth_config.JWT_SECRET, algorithm=auth_config.JWT_ALG)
+    access_token = jwt.encode(
+        jwt_data, auth_config.JWT_SECRET, algorithm=auth_config.JWT_ALG
+    )
 
     return access_token
 
@@ -128,7 +132,7 @@ def check_password(password: str, password_in_db: bytes) -> bool:
     Args:
         password (str): The password to be checked.
         password_in_db (bytes): The hashed password stored in the database.
-    
+
     Returns:
         bool: True if the password matches, False otherwise.
     """

@@ -1,5 +1,4 @@
-from pydantic import BaseModel as BaseSchema
-from pydantic import Field
+from pydantic import BaseModel as BaseSchema, Field
 
 
 class JWTData(BaseSchema):
@@ -17,3 +16,7 @@ class AccessTokenResponse(BaseSchema):
 
 class SuccessLoginPesponse(BaseSchema):
     detail: str = "Login successful"
+
+
+class SuccessLogoutPesponse(BaseSchema):
+    detail: str = "Logout successful"

@@ -1,5 +1,13 @@
-from sqlalchemy import (Column, DateTime, Enum, ForeignKey, Integer,
-                        LargeBinary, String, func)
+from sqlalchemy import (
+    Column,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Integer,
+    LargeBinary,
+    String,
+    func,
+)
 from sqlalchemy.orm import relationship
 
 from app.auth.models import Base
@@ -7,7 +15,7 @@ from app.users.schemas import MembershipStatus, UserRole
 
 
 class LibraryMemberModel(Base):
-    """ Модель члена библиотеки в базе данных """
+    """Модель члена библиотеки в базе данных"""
 
     __tablename__ = "library_member"
 
@@ -23,7 +31,7 @@ class LibraryMemberModel(Base):
 
 
 class UserModel(Base):
-    """ Модель пользователя в базе данных """
+    """Модель пользователя в базе данных"""
 
     __tablename__ = "user"
 
@@ -34,7 +42,9 @@ class UserModel(Base):
     role = Column(Enum(UserRole), default=UserRole.USER)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-    library_member_id = Column(Integer, ForeignKey("library_member.id", ondelete="CASCADE"), nullable=True)
+    library_member_id = Column(
+        Integer, ForeignKey("library_member.id", ondelete="CASCADE"), nullable=True
+    )
 
     library_member = relationship("LibraryMemberModel", back_populates="user")
     refresh_tokens = relationship("RefreshTokenModel", back_populates="user")

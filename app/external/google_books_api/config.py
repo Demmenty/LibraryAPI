@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings
 
 
 class GoogleBooksConfig(BaseSettings):
-    GB_API_URL: str = "https://www.googleapis.com/"
+    GOOGLE_BOOKS_API: str = "https://www.googleapis.com/books/v1"
 
 
 gb_config = GoogleBooksConfig()

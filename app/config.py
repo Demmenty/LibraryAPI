@@ -9,7 +9,7 @@ load_dotenv(find_dotenv(".env"))
 
 
 class Environment(str, Enum):
-    """ Класс с константами окружения приложения """
+    """Класс с константами окружения приложения"""
 
     LOCAL = "LOCAL"
     STAGING = "STAGING"

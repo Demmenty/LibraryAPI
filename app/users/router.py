@@ -8,9 +8,7 @@ router = APIRouter()
 
 
 @router.get("/me", response_model=UserResponse)
-async def get_me(
-    user: UserModel = Depends(get_user_from_refresh_token)
-) -> dict:
+async def get_me(user: UserModel = Depends(get_user_from_refresh_token)) -> dict:
     """Get the logged user information"""
 
     return user

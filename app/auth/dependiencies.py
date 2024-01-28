@@ -1,11 +1,17 @@
 from fastapi import Cookie, Depends
-from jose import JWTError, jwt, ExpiredSignatureError
+from jose import ExpiredSignatureError, JWTError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth import utils as auth_utils
 from app.auth.config import auth_config, oauth2_scheme
-from app.auth.exceptions import (AuthorizationFailed, AuthRequired, AccessTokenRequired,
-                                 InvalidToken, RefreshTokenNotValid, AccessTokenExpired)
+from app.auth.exceptions import (
+    AccessTokenExpired,
+    AccessTokenRequired,
+    AuthorizationFailed,
+    AuthRequired,
+    InvalidToken,
+    RefreshTokenNotValid,
+)
 from app.auth.schemas import JWTData
 from app.auth.service import TokenService
 from app.database import get_db
@@ -15,12 +21,12 @@ from app.users.service import UserService
 
 async def get_user_from_refresh_token(
     db: AsyncSession = Depends(get_db),
-    refresh_token_value: str = Cookie(..., alias="refreshToken"),
+    refresh_token_value: str = Cookie(default=None, alias="refreshToken"),
     token_service: TokenService = Depends(TokenService),
     user_service: UserService = Depends(UserService),
 ) -> UserModel:
     """
-    Retrieves a user from the database using a refresh token. 
+    Retrieves a user from the database using a refresh token.
 
     Args:
         db (AsyncSession): Async database session
@@ -30,6 +36,9 @@ async def get_user_from_refresh_token(
     Returns:
         User: The corresponding user from the database
     """
+
+    if not refresh_token_value:
+        raise AuthRequired()
 
     refresh_token = await token_service.get_refresh_token_by_value(
         db, refresh_token_value
@@ -98,9 +107,7 @@ async def get_user_from_access_token(
 
     try:
         payload = jwt.decode(
-            access_token, 
-            auth_config.JWT_SECRET, 
-            algorithms=[auth_config.JWT_ALG]
+            access_token, auth_config.JWT_SECRET, algorithms=[auth_config.JWT_ALG]
         )
     except ExpiredSignatureError:
         raise AccessTokenExpired()
@@ -111,7 +118,7 @@ async def get_user_from_access_token(
 
     if not jwt_token:
         raise InvalidToken()
-    
+
     user_id = jwt_token.user_id
     user_db = await user_service.get_by_id(db, user_id)
 
@@ -119,6 +126,7 @@ async def get_user_from_access_token(
         raise AuthRequired()
 
     return user_db
+
 
 # ??? do I need it
 async def get_admin_from_access_token(

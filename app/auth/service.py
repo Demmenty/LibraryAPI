@@ -10,11 +10,11 @@ from app.auth.config import auth_config
 from app.auth.models import RefreshTokenModel
 
 
-class TokenService():
+class TokenService:
 
     async def create_refresh_token(
-        self, 
-        db: AsyncSession, 
+        self,
+        db: AsyncSession,
         user_id: int,
     ) -> str:
         """
@@ -33,19 +33,20 @@ class TokenService():
         new_token = RefreshTokenModel(
             user_id=user_id,
             refresh_token=refresh_token_value,
-            expires_at=datetime.utcnow() + timedelta(seconds=auth_config.REFRESH_TOKEN_EXP),
+            expires_at=datetime.utcnow()
+            + timedelta(seconds=auth_config.REFRESH_TOKEN_EXP),
             uuid=str(uuid.uuid4()),
         )
-    
+
         db.add(new_token)
         await db.commit()
 
         return refresh_token_value
-    
+
     async def get_refresh_token_by_value(
         self,
         db: AsyncSession,
-        refresh_token: str, 
+        refresh_token: str,
     ) -> RefreshTokenModel | None:
         """
         Asynchronous function to retrieve a refresh token from the database.
@@ -58,15 +59,15 @@ class TokenService():
             Union[RefreshTokenModel, None]: The retrieved refresh token, if found, or None.
         """
 
-        q = select(RefreshTokenModel).filter(RefreshTokenModel.refresh_token == refresh_token)
+        q = select(RefreshTokenModel).filter(
+            RefreshTokenModel.refresh_token == refresh_token
+        )
         result = await db.execute(q)
 
         return result.scalars().first()
-    
+
     async def get_refresh_token_by_uuid(
-        self,
-        db: AsyncSession,
-        refresh_token_uuid: str
+        self, db: AsyncSession, refresh_token_uuid: str
     ) -> RefreshTokenModel | None:
         """
         Retrieves a refresh token by its UUID from the database.
@@ -78,17 +79,17 @@ class TokenService():
         Returns:
             Union[RefreshTokenModel, None]: The retrieved refresh token, if found, or None.
         """
-        
-        q = select(RefreshTokenModel).filter(RefreshTokenModel.uuid == refresh_token_uuid)
+
+        q = select(RefreshTokenModel).filter(
+            RefreshTokenModel.uuid == refresh_token_uuid
+        )
         result = await db.execute(q)
         token = result.scalars().first()
 
         return token
 
     async def expire_refresh_token(
-        self, 
-        db: AsyncSession,
-        refresh_token_uuid: UUID4
+        self, db: AsyncSession, refresh_token_uuid: UUID4
     ) -> None:
         """
         Expire the refresh token for the given refresh token UUID.

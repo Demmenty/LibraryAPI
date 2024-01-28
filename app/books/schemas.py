@@ -1,8 +1,8 @@
 from typing import List
 
-from pydantic import BaseModel as BaseSchema
-from pydantic import field_validator
+from pydantic import BaseModel as BaseSchema, field_validator, model_validator
 
+from app.books.exceptions import SearchQueryEmpty
 from app.books.models import BookModel
 
 
@@ -11,7 +11,7 @@ class Author(BaseSchema):
 
     class Config:
         from_attributes = True
-    
+
 
 class Category(BaseSchema):
     name: str
@@ -19,7 +19,8 @@ class Category(BaseSchema):
     class Config:
         from_attributes = True
 
-    @field_validator("name")
+    @field_validator("name", mode="before")
+    @classmethod
     def convert_to_lower(cls, value):
         return value.lower()
 
@@ -36,7 +37,7 @@ class Book(BaseSchema):
         from_attributes = True
 
     @classmethod
-    def from_model(cls, book: BookModel) -> 'Book':
+    def from_model(cls, book: BookModel) -> "Book":
         authors = [Author(name=author.name) for author in book.authors]
         categories = [Category(name=category.name) for category in book.categories]
 
@@ -56,3 +57,20 @@ class BookList(BaseSchema):
 
     class Config:
         from_attributes = True
+
+
+class BookSearchQuery(BaseSchema):
+    title: str | None = None
+    author: str | None = None
+    publication_date: str | None = None
+    isbn: str | None = None
+
+    class Config:
+        from_attributes = True
+
+    @model_validator(mode="after")
+    def at_least_one_field_not_none(cls, values):
+        if all((not field[1] for field in values)):
+            raise SearchQueryEmpty()
+
+        return values

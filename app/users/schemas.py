@@ -1,7 +1,6 @@
 import enum
 
-from pydantic import BaseModel as BaseSchema
-from pydantic import EmailStr, Field, field_validator
+from pydantic import BaseModel as BaseSchema, EmailStr, Field, field_validator
 
 
 class MembershipStatus(str, enum.Enum):

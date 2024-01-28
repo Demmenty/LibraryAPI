@@ -1,9 +1,9 @@
+import logging
+
 from sqlalchemy import MetaData
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy.orm.decl_api import DeclarativeMeta
-import logging
-
 
 DB_NAMING_CONVENTION = {
     "ix": "%(column_0_label)s_idx",  # Индекс
@@ -16,7 +16,7 @@ DB_NAMING_CONVENTION = {
 
 DATABASE_URL = "postgresql+asyncpg://user:password@postgres:5432/postgres"
 
-async_engine = create_async_engine(DATABASE_URL) # add echo=True for sqlalchemy logs
+async_engine = create_async_engine(DATABASE_URL)  # add echo=True for sqlalchemy logs
 
 async_session = sessionmaker(
     bind=async_engine,
