@@ -51,7 +51,8 @@ python -m app.main createadmin
 ## Testing
 
 - dont forget to change settings if you want to use test database 
-(tests will clear all database data!)
+(tests will clear all database data!)<br>
+files to check: .env, alembic.ini, docker-compose.yaml
 
 - run tests
 ```
