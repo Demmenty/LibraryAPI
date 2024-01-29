@@ -15,8 +15,6 @@ from app.users.schemas import MembershipStatus, UserRole
 
 
 class LibraryMemberModel(Base):
-    """Модель члена библиотеки в базе данных"""
-
     __tablename__ = "library_member"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -31,8 +29,6 @@ class LibraryMemberModel(Base):
 
 
 class UserModel(Base):
-    """Модель пользователя в базе данных"""
-
     __tablename__ = "user"
 
     id = Column(Integer, primary_key=True, index=True)

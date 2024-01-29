@@ -6,8 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from app.auth import utils as auth_utils
-from app.auth.config import auth_config
 from app.auth.models import RefreshTokenModel
+from app.config import settings
 
 
 class TokenService:
@@ -33,8 +33,7 @@ class TokenService:
         new_token = RefreshTokenModel(
             user_id=user_id,
             refresh_token=refresh_token_value,
-            expires_at=datetime.utcnow()
-            + timedelta(seconds=auth_config.REFRESH_TOKEN_EXP),
+            expires_at=datetime.utcnow() + timedelta(seconds=settings.REFRESH_TOKEN_EXP),
             uuid=str(uuid.uuid4()),
         )
 

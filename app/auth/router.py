@@ -13,8 +13,9 @@ from app.auth.service import TokenService
 from app.auth.utils import generate_access_token, get_refresh_token_cookie_settings
 from app.database import get_db
 from app.users.exceptions import EmailTaken, UsernameTaken
-from app.users.schemas import User, UserResponse
+from app.users.schemas import User, UserRegisterRequest, UserResponse
 from app.users.service import UserService
+from app.users.schemas import UserRole
 
 router = APIRouter()
 
@@ -23,19 +24,22 @@ router = APIRouter()
     "/register", status_code=status.HTTP_201_CREATED, response_model=UserResponse
 )
 async def register(
-    user: User,
+    new_user: UserRegisterRequest,
     db: AsyncSession = Depends(get_db),
     user_service: UserService = Depends(UserService),
 ) -> dict:
     """Register a new user with the provided authentication data"""
 
-    if await user_service.get_by_email(db, user.email):
+    if await user_service.get_by_email(db, new_user.email):
         raise EmailTaken()
 
-    if await user_service.get_by_username(db, user.username):
+    if await user_service.get_by_username(db, new_user.username):
         raise UsernameTaken()
+    
+    new_user = User(**new_user.model_dump())
+    new_user.role = UserRole.USER
 
-    user = await user_service.create_user(db, user)
+    user = await user_service.create_user(db, new_user)
 
     return user
 
@@ -68,9 +72,8 @@ async def get_api_access_token(
     """Generates a new API access token for logged user"""
 
     access_token = generate_access_token(user=user)
-    access_token_schema = AccessTokenResponse(access_token=access_token)
 
-    return access_token_schema
+    return AccessTokenResponse(access_token=access_token)
 
 
 @router.post("/logout", response_model=SuccessLogoutPesponse)

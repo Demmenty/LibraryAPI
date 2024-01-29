@@ -2,6 +2,8 @@ import enum
 
 from pydantic import BaseModel as BaseSchema, EmailStr, Field, field_validator
 
+from app.config import settings
+
 
 class MembershipStatus(str, enum.Enum):
     ACTIVE = "ACTIVE"
@@ -13,11 +15,12 @@ class UserRole(str, enum.Enum):
     USER = "user"
 
 
-class User(BaseSchema):
+class UserRegisterRequest(BaseSchema):
     username: str
     email: EmailStr
-    password: str = Field(min_length=6, max_length=128)
-    role: UserRole = UserRole.USER
+    password: str = Field(
+        min_length=settings.MIN_PASSWORD_LENGTH, max_length=settings.MAX_PASSWORD_LENGTH
+    )
 
     @field_validator("password", mode="after")
     @classmethod
@@ -33,6 +36,10 @@ class User(BaseSchema):
             )
 
         return password
+
+
+class User(UserRegisterRequest):
+    role: UserRole = UserRole.USER
 
 
 class UserResponse(BaseSchema):

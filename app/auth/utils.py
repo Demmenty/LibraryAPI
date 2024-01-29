@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 import bcrypt
 from jose import jwt
 
-from app.auth.config import auth_config
 from app.auth.models import RefreshTokenModel
 from app.config import settings
 from app.users.models import UserModel, UserRole
@@ -49,10 +48,10 @@ def get_refresh_token_cookie_settings(
     """
 
     base_cookie = {
-        "key": auth_config.REFRESH_TOKEN_KEY,
+        "key": settings.REFRESH_TOKEN_KEY,
         "httponly": True,
         "samesite": "none",
-        "secure": auth_config.SECURE_COOKIES,
+        "secure": settings.SECURE_COOKIES,
         "domain": settings.SITE_DOMAIN,
     }
     if expired:
@@ -61,7 +60,7 @@ def get_refresh_token_cookie_settings(
     return {
         **base_cookie,
         "value": refresh_token,
-        "max_age": auth_config.REFRESH_TOKEN_EXP,
+        "max_age": settings.REFRESH_TOKEN_EXP,
     }
 
 
@@ -81,7 +80,7 @@ def is_refresh_token_expired(refresh_token: RefreshTokenModel) -> bool:
 
 def generate_access_token(
     user: UserModel,
-    expires_delta: timedelta = timedelta(minutes=auth_config.JWT_EXP),
+    expires_delta: timedelta = timedelta(minutes=settings.JWT_EXP),
 ) -> str:
     """
     Generate an access token for the given user.
@@ -89,7 +88,7 @@ def generate_access_token(
     Args:
         user (UserModel): The user for whom the access token is being generated.
         expires_delta (timedelta, optional): The expiration time for the token.
-            Defaults to timedelta(minutes=auth_config.JWT_EXP).
+            Defaults to timedelta(minutes=settings.JWT_EXP).
 
     Returns:
         str: The generated access token.
@@ -100,9 +99,7 @@ def generate_access_token(
         "exp": datetime.utcnow() + expires_delta,
         "is_admin": user.role == UserRole.ADMIN,
     }
-    access_token = jwt.encode(
-        jwt_data, auth_config.JWT_SECRET, algorithm=auth_config.JWT_ALG
-    )
+    access_token = jwt.encode(jwt_data, settings.JWT_SECRET, algorithm=settings.JWT_ALG)
 
     return access_token
 

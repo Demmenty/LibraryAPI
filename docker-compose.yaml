@@ -1,4 +1,3 @@
-# Сервисы: api - основное приложение, redis и postgres - базы данных.
 services:
   api:
     container_name: api
@@ -45,10 +44,10 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready"]
+      test: ["CMD-SHELL", "pg_isready -U user -d postgres"]
       interval: 30s
       timeout: 60s
-      retries: 5
+      retries: 3
 
 volumes:
   redis_data:

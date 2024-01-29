@@ -1,9 +1,9 @@
 from fastapi import Cookie, Depends
+from fastapi.security import OAuth2PasswordBearer
 from jose import ExpiredSignatureError, JWTError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth import utils as auth_utils
-from app.auth.config import auth_config, oauth2_scheme
 from app.auth.exceptions import (
     AccessTokenExpired,
     AccessTokenRequired,
@@ -14,9 +14,12 @@ from app.auth.exceptions import (
 )
 from app.auth.schemas import JWTData
 from app.auth.service import TokenService
+from app.config import settings
 from app.database import get_db
 from app.users.models import UserModel, UserRole
 from app.users.service import UserService
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/token", auto_error=False)
 
 
 async def get_user_from_refresh_token(
@@ -107,7 +110,7 @@ async def get_user_from_access_token(
 
     try:
         payload = jwt.decode(
-            access_token, auth_config.JWT_SECRET, algorithms=[auth_config.JWT_ALG]
+            access_token, settings.JWT_SECRET, algorithms=[settings.JWT_ALG]
         )
     except ExpiredSignatureError:
         raise AccessTokenExpired()
@@ -128,7 +131,7 @@ async def get_user_from_access_token(
     return user_db
 
 
-# ??? do I need it
+# TODO do I need it ???
 async def get_admin_from_access_token(
     user: UserModel = Depends(get_user_from_access_token),
 ) -> UserModel:

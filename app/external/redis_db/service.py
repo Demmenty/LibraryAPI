@@ -1,7 +1,7 @@
 import redis.asyncio as aioredis
 from redis.asyncio import Redis
 
-from app.external.redis_db.config import redis_config
+from app.config import settings
 from app.external.redis_db.schemas import RedisData
 
 
@@ -28,7 +28,7 @@ class RedisService:
         """
 
         self.pool = aioredis.ConnectionPool.from_url(
-            str(redis_config.REDIS_URL),
+            str(settings.REDIS_URL),
             max_connections=max_connections,
             decode_responses=True,
         )

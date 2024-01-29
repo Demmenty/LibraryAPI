@@ -1,14 +1,15 @@
+import asyncio
 import logging
 
 import httpx
 
 from app.books.schemas import Author, Book, Category
-from app.external.google_books_api.config import gb_config
+from app.config import settings
 
 
 class GoogleBooksService:
 
-    BASE_URL: str = gb_config.GOOGLE_BOOKS_API
+    BASE_URL: str = settings.GOOGLE_BOOKS_API
 
     @property
     def session(self):
@@ -52,7 +53,10 @@ class GoogleBooksService:
         if not response_json or response_json["totalItems"] == 0:
             return None
 
-        book = self._parse_book_from_response(isbn, response_json)
+        loop = asyncio.get_event_loop()
+        book = await loop.run_in_executor(
+            None, lambda: self._parse_book_from_response(isbn, response_json)
+        )
 
         return book
 
