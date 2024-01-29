@@ -49,3 +49,13 @@ class UserResponse(BaseSchema):
 
     class Config:
         from_attributes = True
+
+
+class ChangeMembershipRequest(BaseSchema):
+    user_id: int
+    contact_information: str | None = None
+
+
+class ChangeMembershipResponse(BaseSchema):
+    user_id: int
+    current_membership_status: MembershipStatus

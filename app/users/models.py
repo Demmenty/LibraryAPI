@@ -42,7 +42,9 @@ class UserModel(Base):
         Integer, ForeignKey("library_member.id", ondelete="CASCADE"), nullable=True
     )
 
-    library_member = relationship("LibraryMemberModel", back_populates="user")
+    library_member = relationship(
+        "LibraryMemberModel", back_populates="user", lazy="selectin"
+    )
     refresh_tokens = relationship("RefreshTokenModel", back_populates="user")
 
     def __str__(self):

@@ -8,7 +8,13 @@ from app.auth.dependiencies import (
 from app.database import get_db
 from app.users.exceptions import EmailTaken, UsernameTaken
 from app.users.models import UserModel
-from app.users.schemas import User, UserResponse
+from app.users.schemas import (
+    ChangeMembershipRequest,
+    ChangeMembershipResponse,
+    MembershipStatus,
+    User,
+    UserResponse,
+)
 from app.users.service import UserService
 
 router = APIRouter()
@@ -42,3 +48,41 @@ async def get_me(user: UserModel = Depends(get_user_from_refresh_token)) -> dict
     """Get the logged user information"""
 
     return user
+
+
+@router.post("/membership/activate", response_model=ChangeMembershipResponse)
+async def activate_membership(
+    data: ChangeMembershipRequest,
+    db: AsyncSession = Depends(get_db),
+    user_service: UserService = Depends(UserService),
+    admin: UserModel = Depends(get_admin_from_refresh_token),
+) -> dict:
+    """
+    Only for admins.
+    Activate library membership of a certain user.
+    """
+
+    await user_service.activate_membership(db, data.user_id, data.contact_information)
+
+    return ChangeMembershipResponse(
+        user_id=data.user_id, current_membership_status=MembershipStatus.ACTIVE
+    )
+
+
+@router.post("/membership/block", response_model=ChangeMembershipResponse)
+async def block_membership(
+    data: ChangeMembershipRequest,
+    db: AsyncSession = Depends(get_db),
+    user_service: UserService = Depends(UserService),
+    admin: UserModel = Depends(get_admin_from_refresh_token),
+) -> dict:
+    """
+    Only for admins.
+    Blocks library membership of a certain user.
+    """
+
+    await user_service.block_membership(db, data.user_id)
+
+    return ChangeMembershipResponse(
+        user_id=data.user_id, current_membership_status=MembershipStatus.BLOCKED
+    )

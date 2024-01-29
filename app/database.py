@@ -14,7 +14,7 @@ DB_NAMING_CONVENTION = {
 }
 
 # add echo=True for sqlalchemy logs
-async_engine = create_async_engine(settings.DATABASE_URL) 
+async_engine = create_async_engine(settings.DATABASE_URL)
 
 async_session = sessionmaker(
     bind=async_engine,

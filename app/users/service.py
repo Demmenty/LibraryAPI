@@ -6,7 +6,12 @@ from sqlalchemy.future import select
 
 from app.auth.utils import check_password, hash_password
 from app.users import schemas
-from app.users.models import UserModel
+from app.users.exceptions import (
+    ContactInformationNotProvided,
+    UserIsNotLibraryMember,
+    UserNotFound,
+)
+from app.users.models import LibraryMemberModel, UserModel
 
 
 class UserService:
@@ -116,3 +121,69 @@ class UserService:
             return None
 
         return user
+
+    async def activate_membership(
+        self,
+        db: AsyncSession,
+        user_id: int,
+        contact_information: str | None = None,
+    ):
+        """
+        Activate a user's library membership.
+
+        Args:
+            db: An AsyncSession representing the database session.
+            user_id: An integer representing the user's ID.
+            contact_information: A string representing the user's contact information, default is None.
+        """
+
+        user = await self.get_by_id(db, user_id)
+        if not user:
+            raise UserNotFound()
+
+        user_membership = user.library_member
+
+        if not user_membership:
+            if not contact_information:
+                raise ContactInformationNotProvided()
+
+            user.library_member = LibraryMemberModel(
+                id=user_id,
+                contact_information=contact_information,
+                membership_status=schemas.MembershipStatus.ACTIVE,
+            )
+            await db.commit()
+            return
+
+        if user_membership:
+            if user_membership.membership_status == schemas.MembershipStatus.BLOCKED:
+                user.library_member.membership_status = schemas.MembershipStatus.ACTIVE
+                await db.commit()
+                return
+
+    async def block_membership(
+        self,
+        db: AsyncSession,
+        user_id: int,
+    ):
+        """
+        Blocks a user's library membership.
+
+        Args:
+            db (AsyncSession): The asynchronous database session.
+            user_id (int): The ID of the user whose membership is to be blocked.
+        """
+
+        user = await self.get_by_id(db, user_id)
+        if not user:
+            raise UserNotFound()
+
+        user_membership = user.library_member
+
+        if not user_membership:
+            raise UserIsNotLibraryMember()
+
+        if user_membership.membership_status == schemas.MembershipStatus.ACTIVE:
+            user.library_member.membership_status = schemas.MembershipStatus.BLOCKED
+            await db.commit()
+            return
