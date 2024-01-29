@@ -25,6 +25,14 @@ class Category(BaseSchema):
         return value.lower()
 
 
+class CategoryResponse(Category):
+    id: int
+
+
+class CategoriesResponse(BaseSchema):
+    categories: List[CategoryResponse] = []
+
+
 class Book(BaseSchema):
     isbn: str
     title: str
@@ -36,30 +44,15 @@ class Book(BaseSchema):
     class Config:
         from_attributes = True
 
-    @classmethod
-    def from_model(cls, book: BookModel) -> "Book":
-        authors = [Author(name=author.name) for author in book.authors]
-        categories = [Category(name=category.name) for category in book.categories]
 
-        book = cls(
-            isbn=book.isbn,
-            language=book.language,
-            title=book.title,
-            authors=authors,
-            publication_date=book.publication_date,
-            categories=categories,
-        )
-        return book
-
-
-class BookList(BaseSchema):
-    books: List[Book]
+class Books(BaseSchema):
+    books: List[Book] = []
 
     class Config:
         from_attributes = True
 
 
-class BookSearchQuery(BaseSchema):
+class BookSearchRequest(BaseSchema):
     title: str | None = None
     author: str | None = None
     publication_date: str | None = None
@@ -74,3 +67,13 @@ class BookSearchQuery(BaseSchema):
             raise SearchQueryEmpty()
 
         return values
+
+
+class UserUnavailableCategoriesChangeRequest(BaseSchema):
+    user_id: int
+    categories_id: list[int]
+
+
+class UserUnavailableCategoriesResponse(BaseSchema):
+    user_id: int
+    unavailable_categories: list[CategoryResponse] = []

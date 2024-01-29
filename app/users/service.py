@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from app.auth.utils import check_password, hash_password
+from app.books.service import BookService
 from app.users import schemas
 from app.users.exceptions import (
     ContactInformationNotProvided,
@@ -12,6 +13,8 @@ from app.users.exceptions import (
     UserNotFound,
 )
 from app.users.models import LibraryMemberModel, UserModel
+
+book_service = BookService()
 
 
 class UserService:
@@ -187,3 +190,67 @@ class UserService:
             user.library_member.membership_status = schemas.MembershipStatus.BLOCKED
             await db.commit()
             return
+
+    async def add_unavailable_categories(
+        self,
+        db: AsyncSession,
+        user_id: int,
+        categories_id: list[int],
+    ) -> UserModel:
+        """
+        Adds unavailable book categories for a user in the database.
+
+        Args:
+            db (AsyncSession): The async database session.
+            user_id (int): The ID of the user.
+            categories_id (list[int]): The IDs of the categories to be marked as unavailable for the user.
+
+        Returns:
+            UserModel: The updated user object after adding the unavailable categories.
+        """
+
+        user = await self.get_by_id(db, user_id)
+        if not user:
+            raise UserNotFound()
+
+        for category_id in categories_id:
+            category = await book_service.get_category_by_id(db, category_id)
+            if category:
+                user.unavailable_book_categories.append(category)
+
+        await db.commit()
+        await db.refresh(user)
+
+        return user
+
+    async def remove_unavailable_categories(
+        self,
+        db: AsyncSession,
+        user_id: int,
+        categories_id: list[int],
+    ) -> UserModel:
+        """
+        Removes unavailable book categories for a user in the database.
+
+        Args:
+            db (AsyncSession): The async database session.
+            user_id (int): The ID of the user.
+            categories_id (list[int]): The IDs of the categories to be removed from the unavailable list.
+
+        Returns:
+            UserModel: The updated user object after removing the categories.
+        """
+
+        user = await self.get_by_id(db, user_id)
+        if not user:
+            raise UserNotFound()
+
+        for category_id in categories_id:
+            category = await book_service.get_category_by_id(db, category_id)
+            if category and category in user.unavailable_book_categories:
+                user.unavailable_book_categories.remove(category)
+
+        await db.commit()
+        await db.refresh(user)
+
+        return user

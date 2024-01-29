@@ -1,19 +1,19 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from app.books import schemas
 from app.books.models import AuthorModel, BookModel, CategoryModel
+from app.books.schemas import Author, Book, BookSearchRequest, Category
 
 
 class BookService:
 
-    async def create_book(self, db: AsyncSession, book: schemas.Book) -> BookModel:
+    async def create_book(self, db: AsyncSession, book: Book) -> BookModel:
         """
         Creates a book in the database.
 
         Args:
             db (AsyncSession): The async session to interact with the database.
-            book (schemas.Book): The book object containing the book details.
+            book (Book): The book object containing the book details.
 
         Returns:
             BookModel: The newly created book model.
@@ -40,15 +40,13 @@ class BookService:
 
         return new_book
 
-    async def create_author(
-        self, db: AsyncSession, author: schemas.Author
-    ) -> AuthorModel:
+    async def create_author(self, db: AsyncSession, author: Author) -> AuthorModel:
         """
         Create an author in the database.
 
         Args:
             db (AsyncSession): The database session.
-            author (schemas.Author): The author data to be created.
+            author (Author): The author data to be created.
 
         Returns:
             AuthorModel: The newly created author.
@@ -62,14 +60,14 @@ class BookService:
         return new_author
 
     async def create_category(
-        self, db: AsyncSession, category: schemas.Category
+        self, db: AsyncSession, category: Category
     ) -> CategoryModel:
         """
         Creates a new book category in the database.
 
         Args:
             db (AsyncSession): The async database session.
-            category (schemas.Category): The category data to be created.
+            category (Category): The category data to be created.
 
         Returns:
             CategoryModel: The newly created category model.
@@ -123,34 +121,25 @@ class BookService:
     async def search_books(
         self,
         db: AsyncSession,
-        search_query: schemas.BookSearchQuery,
+        search: BookSearchRequest,
     ) -> list[BookModel]:
 
         query = select(BookModel)
-        if search_query.title:
-            query = query.filter(BookModel.title == search_query.title)
-        if search_query.author:
+        if search.title:
+            query = query.filter(BookModel.title == search.title)
+        if search.author:
             query = query.filter(
-                BookModel.authors.any(AuthorModel.name == search_query.author)
+                BookModel.authors.any(AuthorModel.name == search.author)
             )
-        if search_query.publication_date:
-            query = query.filter(
-                BookModel.publication_date == search_query.publication_date
-            )
-        if search_query.isbn:
-            query = query.filter(BookModel.isbn == search_query.isbn)
+        if search.publication_date:
+            query = query.filter(BookModel.publication_date == search.publication_date)
+        if search.isbn:
+            query = query.filter(BookModel.isbn == search.isbn)
 
         result = await db.execute(query)
         books = result.scalars().all()
 
         return books
-
-    # TODO remove
-    async def get_all_books(self, db: AsyncSession) -> list[BookModel]:
-        result = await db.execute(select(BookModel))
-        books_db = result.scalars().all()
-
-        return books_db
 
     async def get_author_by_name(
         self, db: AsyncSession, name: str
@@ -170,3 +159,38 @@ class BookService:
         author = result.scalars().first()
 
         return author
+
+    async def get_category_by_id(
+        self, db: AsyncSession, id: int
+    ) -> CategoryModel | None:
+        """
+        Retrieves a category by ID from the database.
+
+        Args:
+            db (AsyncSession): The asynchronous database session.
+            id (int): The ID of the category to retrieve.
+
+        Returns:
+            CategoryModel | None: The retrieved category, or None if not found.
+        """
+
+        result = await db.execute(select(CategoryModel).filter_by(id=id))
+        category = result.scalars().first()
+
+        return category
+
+    async def get_all_categories(self, db: AsyncSession) -> list[CategoryModel]:
+        """
+        Retrieves all book categories from the database.
+
+        Args:
+            db (AsyncSession): The asynchronous database session.
+
+        Returns:
+            list[CategoryModel]: A list of CategoryModel objects.
+        """
+
+        result = await db.execute(select(CategoryModel))
+        categories = result.scalars().all()
+
+        return categories

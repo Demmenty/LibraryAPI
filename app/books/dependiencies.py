@@ -19,7 +19,7 @@ def validate_isbn_10(
         str: The validated ISBN-10 number.
     """
 
-    is_valid = re.match(r"^\d{10}$", isbn)
+    is_valid = re.match(r"^\d{10}$", isbn.strip())
     if not is_valid:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,

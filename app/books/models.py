@@ -1,7 +1,7 @@
 from sqlalchemy import Column, ForeignKey, Integer, String, Table
 from sqlalchemy.orm import relationship
 
-from app.users.models import Base
+from app.auth.models import Base
 
 book_author = Table(
     "book_author",
@@ -14,6 +14,13 @@ book_category = Table(
     "book_category",
     Base.metadata,
     Column("book_id", Integer, ForeignKey("book.id")),
+    Column("category_id", Integer, ForeignKey("category.id")),
+)
+
+user_unavailable_book_category = Table(
+    "user_unavailable_book_category",
+    Base.metadata,
+    Column("user_id", Integer, ForeignKey("user.id")),
     Column("category_id", Integer, ForeignKey("category.id")),
 )
 
@@ -38,6 +45,11 @@ class CategoryModel(Base):
 
     books = relationship(
         "BookModel", secondary=book_category, back_populates="categories"
+    )
+    users = relationship(
+        "UserModel",
+        secondary=user_unavailable_book_category,
+        back_populates="unavailable_book_categories",
     )
 
     def __str__(self):

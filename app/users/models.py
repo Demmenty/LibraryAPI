@@ -10,7 +10,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 
-from app.auth.models import Base
+from app.books.models import Base, user_unavailable_book_category
 from app.users.schemas import MembershipStatus, UserRole
 
 
@@ -46,6 +46,12 @@ class UserModel(Base):
         "LibraryMemberModel", back_populates="user", lazy="selectin"
     )
     refresh_tokens = relationship("RefreshTokenModel", back_populates="user")
+    unavailable_book_categories = relationship(
+        "CategoryModel",
+        secondary=user_unavailable_book_category,
+        back_populates="users",
+        lazy="selectin",
+    )
 
     def __str__(self):
         return f" User {self.username}"
