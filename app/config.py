@@ -40,8 +40,6 @@ class Config(BaseSettings):
 
     ENVIRONMENT: Environment = Environment.PRODUCTION
 
-    SENTRY_DSN: str | None = None
-
     CORS_ORIGINS: list[str]
     CORS_ORIGINS_REGEX: str | None = None
     CORS_HEADERS: list[str]
@@ -68,15 +66,6 @@ class Config(BaseSettings):
     GOOGLE_BOOKS_API: str = "https://www.googleapis.com/books/v1"
 
     model_config = SettingsConfigDict(case_sensitive=True)
-
-    @model_validator(mode="after")
-    def validate_sentry_non_local(self) -> "Config":
-        """Проверяет, что DSN для Sentry установлен, если приложение в production."""
-
-        if self.ENVIRONMENT.is_deployed and not self.SENTRY_DSN:
-            raise ValueError("Sentry is not set")
-
-        return self
 
 
 settings = Config()
