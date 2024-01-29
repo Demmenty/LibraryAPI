@@ -26,6 +26,7 @@ docker exec -it api python -m app.main createadmin
 ```
 
 - run tests
+- (change setting for using test database!)
 ```
 docker exec -it api python -m pytest
 ```

@@ -1,8 +1,9 @@
-from app.config import settings
 from sqlalchemy import MetaData
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy.orm.decl_api import DeclarativeMeta
+
+from app.config import settings
 
 DB_NAMING_CONVENTION = {
     "ix": "%(column_0_label)s_idx",  # Индекс
@@ -12,7 +13,8 @@ DB_NAMING_CONVENTION = {
     "pk": "%(table_name)s_pkey",  # Первичный ключ
 }
 
-async_engine = create_async_engine(settings.DATABASE_URL)  # add echo=True for sqlalchemy logs
+# add echo=True for sqlalchemy logs
+async_engine = create_async_engine(settings.DATABASE_URL) 
 
 async_session = sessionmaker(
     bind=async_engine,
@@ -22,6 +24,7 @@ async_session = sessionmaker(
 
 metadata = MetaData(naming_convention=DB_NAMING_CONVENTION)
 Base: DeclarativeMeta = declarative_base(metadata=metadata)
+
 
 async def get_db() -> AsyncSession:
     async with async_session() as db:

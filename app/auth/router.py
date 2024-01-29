@@ -13,9 +13,8 @@ from app.auth.service import TokenService
 from app.auth.utils import generate_access_token, get_refresh_token_cookie_settings
 from app.database import get_db
 from app.users.exceptions import EmailTaken, UsernameTaken
-from app.users.schemas import User, UserRegisterRequest, UserResponse
+from app.users.schemas import User, UserRegisterRequest, UserResponse, UserRole
 from app.users.service import UserService
-from app.users.schemas import UserRole
 
 router = APIRouter()
 
@@ -35,7 +34,7 @@ async def register(
 
     if await user_service.get_by_username(db, new_user.username):
         raise UsernameTaken()
-    
+
     new_user = User(**new_user.model_dump())
     new_user.role = UserRole.USER
 
