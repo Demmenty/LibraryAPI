@@ -2,19 +2,19 @@ from fastapi import APIRouter, Cookie, Depends, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.dependiencies import get_user_from_refresh_token
+from app.auth.dependencies import get_user_from_refresh_token
 from app.auth.exceptions import InvalidCredentials
 from app.auth.schemas import (
     AccessTokenResponse,
     SuccessLoginPesponse,
     SuccessLogoutPesponse,
 )
-from app.auth.service import TokenService
+from app.auth.services import TokenService
 from app.auth.utils import generate_access_token, get_refresh_token_cookie_settings
 from app.database import get_db
 from app.users.exceptions import EmailTaken, UsernameTaken
 from app.users.schemas import User, UserRegisterRequest, UserResponse, UserRole
-from app.users.service import UserService
+from app.users.services import UserService
 
 router = APIRouter()
 

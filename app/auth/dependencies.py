@@ -9,15 +9,15 @@ from app.auth.exceptions import (
     AccessTokenRequired,
     AuthorizationFailed,
     AuthRequired,
-    InvalidToken,
+    AccessTokenInvalid,
     RefreshTokenNotValid,
 )
 from app.auth.schemas import JWTData
-from app.auth.service import TokenService
+from app.auth.services import TokenService
 from app.config import settings
 from app.database import get_db
 from app.users.models import UserModel, UserRole
-from app.users.service import UserService
+from app.users.services import UserService
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/token", auto_error=False)
 
@@ -73,9 +73,6 @@ async def get_admin_from_refresh_token(
 
     Returns:
         User: The admin user
-
-    Raises:
-        AuthorizationFailed: If the user is not an admin
     """
 
     if user.role != UserRole.ADMIN:
@@ -99,11 +96,9 @@ async def get_user_from_access_token(
 
     Returns:
         User: The user corresponding to the provided access token.
-
-    Raises:
-        AuthRequired: If access token is missing or invalid, or user is not found.
-        InvalidToken: If the access token is invalid.
     """
+
+    print("!!!!!!! get_user_from_access_token")
 
     if not access_token:
         raise AccessTokenRequired()
@@ -115,18 +110,18 @@ async def get_user_from_access_token(
     except ExpiredSignatureError:
         raise AccessTokenExpired()
     except JWTError:
-        raise InvalidToken()
+        raise AccessTokenInvalid()
 
     jwt_token: JWTData = JWTData(**payload)
 
     if not jwt_token:
-        raise InvalidToken()
+        raise AccessTokenInvalid()
 
     user_id = jwt_token.user_id
     user_db = await user_service.get_by_id(db, user_id)
 
     if not user_db:
-        raise AuthRequired()
+        raise AccessTokenInvalid()
 
     return user_db
 
@@ -143,9 +138,6 @@ async def get_admin_from_access_token(
 
     Returns:
         User: The admin user
-
-    Raises:
-        AuthorizationFailed: If the user is not an admin
     """
 
     if user.role != UserRole.ADMIN:

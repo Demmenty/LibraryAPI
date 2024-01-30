@@ -1,5 +1,4 @@
 import redis.asyncio as aioredis
-from redis.asyncio import Redis
 
 from app.config import settings
 from app.external.redis_db.schemas import RedisData
@@ -7,26 +6,10 @@ from app.external.redis_db.schemas import RedisData
 
 class RedisService:
 
-    def __init__(self):
-        self.pool: aioredis.ConnectionPool = None
-        self.client: Redis = None
-
-    async def __aenter__(self):
-        await self.connect()
-        return self
-
-    async def __aexit__(self, exc_type, exc, tb):
-        await self.disconnect()
-
-    async def connect(self, max_connections: int = 10):
+    def __init__(self, max_connections: int = 5):
         """
-        Connects to a Redis database and creates a connection pool.
-
-        Args:
-            max_connections (int, optional): The maximum number of connections to be created.
-                Defaults to 10.
+        Initializing the class with a connection pool and a Redis client.
         """
-
         self.pool = aioredis.ConnectionPool.from_url(
             str(settings.REDIS_URL),
             max_connections=max_connections,
@@ -81,6 +64,6 @@ class RedisService:
         """
 
         await self.client.delete(key)
-
-
-redis_service = RedisService()
+    
+    async def clear_data(self) -> None:
+        await self.client.flushall()

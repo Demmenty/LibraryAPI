@@ -3,7 +3,7 @@ import click
 from app.database import async_session
 from app.users.exceptions import EmailTaken, UsernameTaken
 from app.users.schemas import User, UserRole
-from app.users.service import UserService
+from app.users.services import UserService
 
 
 @click.command()

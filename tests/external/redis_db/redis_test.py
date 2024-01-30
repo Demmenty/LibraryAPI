@@ -1,6 +1,12 @@
 from asyncio import sleep
-
+from app.external.redis_db.services import RedisService
 from app.external.redis_db.schemas import RedisData
+import pytest
+
+
+@pytest.fixture
+def redis_service():
+    return RedisService()
 
 
 class TestRedisService:

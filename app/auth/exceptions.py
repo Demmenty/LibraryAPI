@@ -35,10 +35,6 @@ class AuthorizationFailed(PermissionDenied):
     DETAIL = ErrorCode.AUTHORIZATION_FAILED
 
 
-class InvalidToken(NotAuthenticated):
-    DETAIL = ErrorCode.INVALID_TOKEN
-
-
 class InvalidCredentials(NotAuthenticated):
     DETAIL = ErrorCode.INVALID_CREDENTIALS
 
@@ -47,9 +43,13 @@ class RefreshTokenNotValid(NotAuthenticated):
     DETAIL = ErrorCode.REFRESH_TOKEN_NOT_VALID
 
 
-class AccessTokenRequired(NotAuthenticated):
+class AccessTokenRequired(PermissionDenied):
     DETAIL = ErrorCode.ACCESS_TOKEN_REQUIRED
 
 
-class AccessTokenExpired(NotAuthenticated):
+class AccessTokenExpired(PermissionDenied):
     DETAIL = ErrorCode.ACCESS_TOKEN_EXPIRED
+
+
+class AccessTokenInvalid(PermissionDenied):
+    DETAIL = ErrorCode.INVALID_TOKEN

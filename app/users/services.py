@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from app.auth.utils import check_password, hash_password
-from app.books.service import BookService
+from app.books.services import BookService
 from app.users import schemas
 from app.users.exceptions import (
     ContactInformationNotProvided,

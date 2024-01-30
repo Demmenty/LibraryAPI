@@ -1,30 +1,16 @@
-from contextlib import asynccontextmanager
-from typing import AsyncGenerator
-
 import click
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-from app.auth.router import router as auth_router
+from app.auth.routers import router as auth_routers
 from app.books.models import Base  # -> migrations/env.py
-from app.books.router import router as books_router
+from app.books.routers import router as books_routers
 from app.commands import createadmin
 from app.config import app_configs, settings
-from app.external.redis_db.service import redis_service
-from app.users.router import router as users_router
+from app.users.routers import router as users_routers
 
 
-@asynccontextmanager
-async def lifespan(_app: FastAPI) -> AsyncGenerator:
-    await redis_service.connect()
-
-    yield
-
-    await redis_service.disconnect()
-
-
-app = FastAPI(**app_configs, lifespan=lifespan)
-
+app = FastAPI(**app_configs)
 
 app.add_middleware(
     CORSMiddleware,
@@ -51,9 +37,9 @@ def cli():
 cli.add_command(createadmin)
 
 
-app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
-app.include_router(users_router, prefix="/users", tags=["User Management"])
-app.include_router(books_router, prefix="/books", tags=["Book Management"])
+app.include_router(auth_routers, prefix="/auth", tags=["Authentication"])
+app.include_router(users_routers, prefix="/users", tags=["User Management"])
+app.include_router(books_routers, prefix="/books", tags=["Book Management"])
 
 
 if __name__ == "__main__":
